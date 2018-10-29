@@ -1,0 +1,5 @@
+suspension
+
+1.) Check Date and time from class_status
+2.) Check Classification of class to suspend
+3.) Compare the Class_type of class_status to the Class_type of refsubjectofferingdtl.

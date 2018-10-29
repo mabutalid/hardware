@@ -1,0 +1,118 @@
+import pymysql
+import time
+import datetime
+from datetime import datetime
+from time import localtime, strftime
+
+def time_display():
+    # preparing our current time of the day running
+    HM_time = strftime(strftime('%I' + ':' + '%M' + ':' + '%S' + '%p', localtime()))
+    Hour_Min = str(HM_time)
+    print(Hour_Min)
+
+def time_check():
+        time1 = strftime(strftime('%I' + '%M' + '%S', localtime()))
+        time2 = int(time1)
+        return time2
+
+def infinite_loop():
+    while True:
+        yield True
+
+def suspension():
+    #selecting date,start_time,end_time, and id.
+    cursor.execute("SELECT class_status_date,class_status_time_start,class_status_time_end,class_status_type_id from class_status where class_status_date=CURDATE() and time="+str(time_check())+";")
+    data_class_status = cursor.fetchall()
+    for row3 in data_class_status:
+        print(row3[0])
+        print(row3[3])
+        if str(row3[0]) == str(c):
+
+            # getting data class_id data
+            cursor.execute("SELECT class_status_type_id from class_status where class_status_time_start=" + str(time2) + " AND " + str(row3[0]) + "=" + str(c) + ";")
+            data4 = cursor.fetchall()
+
+            # knowing what level of suspension
+            for row4 in data4:
+                if row4[0] == 1:
+                    print("suspended SHS only")
+
+                    # example of 5 mins delay of turning off
+                    time.sleep(5)
+
+                    n = GPIO.output(4, False)
+                    if n == None:
+                        cursor.execute(
+                            "Update facilities set facilities_air_conditioner_1 = 'DEACTIVATED' where room = '305' ")
+                        db.commit()
+                    seq1 = 1
+                    while seq1 == 1:
+
+                        time.sleep(1)
+                        # time display
+                        time_display()
+
+                        # to equal the database value of time
+                        time_check()
+
+
+                        # getting values for ending suspension
+                        cursor.execute("SELECT class_status_time_end from class_status where class_status_time_end="+str(time_check())+";")
+                        data5 = cursor.fetchall()
+                        for row5 in data5:
+                            if row5[0] == time8:
+                                print("suspension over")
+                                seq1 == 0
+
+
+                elif row4[0] == 2:
+
+                    print("suspended all levels")
+                    time.sleep(5)
+                    n = GPIO.output(4, False)
+                    if n == None:
+                        cursor.execute(
+                            "Update facilities set facilities_air_conditioner_1 = 'DEACTIVATED' where room = '305' ")
+                        db.commit()
+                    seq1 = 1
+                    while seq1 == 1:
+                        time.sleep(1)
+                        # preparing our current time of the day running
+                        HM_time = strftime(strftime('%I' + ':' + '%M' + ':' + '%S' + '%p', localtime()))
+                        Hour_Min = str(HM_time)
+                        print(Hour_Min)
+
+                        # to equal the database value of time
+                        time1 = strftime(strftime('%I' + '%M' + '%S', localtime()))
+                        time8 = int(time1)
+
+                        # getting values for ending suspension
+                        cursor.execute("SELECT class_status_time_end from class_status;")
+                        data5 = cursor.fetchall()
+                        for row5 in data5:
+                            if row5[0] == time8:
+                                print("suspension over")
+                                seq1 == 0
+
+
+c = time.strftime('%Y' + '-' + '%m' + '-' + '%d')
+now=datetime.now().date()
+print(now)
+
+for i in infinite_loop():
+    time_display()
+
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+
+    time.sleep(1)
+
+    cursor.execute("SELECT class_status_date,class_status_time_start,class_status_time_end,class_status_type_id from class_status where class_status_date=CURDATE() and class_status_time_start="+str(time_check()) +";")
+    data = cursor.fetchall()
+
+    for row in data:
+        print(row[0])
+        print(row[1])
+
+        if str(time_check()) == str(row[1]):
+            print("on")
