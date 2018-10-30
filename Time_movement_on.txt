@@ -1,0 +1,98 @@
+import pymysql
+import time
+import datetime
+from datetime import timedelta
+from time import localtime, strftime
+from datetime import date
+
+def infinite_loop():
+    while True:
+        yield True
+
+def time_movement_on():
+
+           #pars to str the data of time_movement_on
+           num=str(row[0])
+           #value for each digit of the number for each data
+           n1=(num[0])
+           n2=(num[1])
+           n3 =(num[2])
+           n4 =(num[3])
+           n5 =(num[4])
+
+           if n1 == '1':
+               n6=(num[5])
+               #str value using concatenation
+               hours_holder=n1+n2
+               minutes_holder=n3+n4
+               seconds_holder=n5+n6
+               #int value
+               hours=int(hours_holder)
+               minutes=int(minutes_holder)
+               seconds=int(seconds_holder)
+           else:
+               hours_holder=n1
+               minutes_holder=n2+n3
+               seconds_holder=n4+n5
+               hours=int(hours_holder)
+               minutes=int(minutes_holder)
+               seconds=int(seconds_holder)
+           t= timedelta(hours=hours,minutes=minutes,seconds=seconds) - timedelta(hours=0, minutes=0, seconds=10)
+           time_movement=[t]
+           return time_movement[0]
+
+def time_display():
+
+    HM_time = strftime(strftime('%I' + ':' + '%M' + ':' + '%S' + '%p', localtime()))
+    return HM_time
+
+
+
+for i in infinite_loop():
+
+    #current time display
+    print(time_display())
+    #current time variable
+    time1 = strftime(strftime('%I' +':'+ '%M' +':'+ '%S', localtime()))
+    time2 = strftime(strftime('%I' + '%M' + '%S', localtime()))
+    #time interval 1 second
+    time.sleep(1)
+
+    #database connection
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+
+    cursor.execute("SELECT time from refsubjectofferingdtl")
+    data = cursor.fetchall()
+
+    for row in data:
+        lights=0
+
+        if str(time_movement_on()) == str(time1):
+            print("on")
+            lights=1
+        if str(row[0])== str(time2):
+            print("on")
+            lights=1
+        while lights==1:
+            time1 = strftime(strftime('%I' + ':' + '%M' + ':' + '%S', localtime()))
+            time2 = strftime(strftime('%I' + '%M' + '%S', localtime()))
+
+            cursor.execute("SELECT time from refsubjectofferingdtl")
+            data = cursor.fetchall()
+
+            for row in data:
+                if str(time_movement_on()) == str(time1):
+                    print("on")
+
+            cursor.execute("SELECT time_end from refsubjectofferingdtl")
+            data1 = cursor.fetchall()
+            print(time_display())
+
+
+            time.sleep(1)
+
+            for row2 in data1:
+                if str(row2[0]) == str(time2):
+                    print("off")
+                    lights=0
