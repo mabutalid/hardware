@@ -1,0 +1,322 @@
+import pymysql
+import time
+import datetime
+from datetime import timedelta
+from time import localtime, strftime
+
+
+
+
+
+# display week of the day
+tWday = datetime.date.today()
+day_of_week = tWday.isoweekday()
+day=''
+if day_of_week == 1:
+        day = 'mon'
+elif day_of_week == 2:
+        day = 'tue'
+elif day_of_week == 3:
+        day ='wed'
+elif day_of_week == 4:
+        day='thu'
+elif day_of_week == 5:
+        day= 'fri'
+elif day_of_week == 6:
+        day='sat'
+elif day_of_week == 7:
+        day = 'sun'
+
+
+
+
+#time display
+def time_display():
+    # preparing our current time of the day running
+    HM_time = strftime(strftime('%I' + ':' + '%M' + ':' + '%S' + '%p', localtime()))
+    Hour_Min = str(HM_time)
+    print(Hour_Min)
+
+#current date
+def curdate():
+    c = time.strftime('%Y' + '-' + '%m' + '-' + '%d')
+    return c
+
+#time to compare to time in database
+def time_check():
+        time1 = strftime(strftime('%I' + '%M' + '%S', localtime()))
+        time2 = int(time1)
+        return time2
+
+#to compare to time_movement_on (advance time_start)
+def time_movement_check():
+    time3 = strftime(strftime('%I' + ':' + '%M' + ':' + '%S', localtime()))
+    return time3
+
+#infinite loop
+def infinite_loop():
+    while True:
+        yield True
+
+#to put inside while loop in suspension
+def while_loop_suspension():
+
+        # #variable to compare to the class_type of refsubjectofferingdtl
+        suspended = "Senior High School"
+        #variable for the while loop
+        seq1=1
+        print("WLS")
+        # database
+        db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+        cursor = db.cursor()
+
+        # time interval of 1sec
+        time.sleep(1)
+
+        # time display
+        time_display()
+
+        # selecting id from refsubjectofferingdtl.
+        cursor.execute(
+            "SELECT class_typerefSubjectOfferingDtl_class_type,time from refsubjectofferingdtl where time=" + str(
+                time_check()) + "&& day='" + str(day) + "';")  # add day to condition
+        data_subject_id = cursor.fetchall()
+
+        # comparing subjectoffering to suspension schedule and type
+        for row4 in data_subject_id:
+            if row4[0] == suspended and str(row4[1])==str(time_check()):
+                # sample of turning of ac with 5min delay
+                time.sleep(5)
+                print("off SHS")
+            elif row4[0] != suspended and str(row4[1])==str(time_check()):
+                print("do nothing")
+
+        # getting values for ending suspension
+        cursor.execute(
+            "SELECT class_status_time_end,class_status_type_id from class_status where class_status_date=CURDATE() and "
+            "class_status_time_end=" + str(time_check()) + ";")
+        data5 = cursor.fetchall()
+        for row5 in data5:
+            if row5[0] == time_check():
+                print("suspension over")
+                seq1 = 0
+        return seq1
+
+
+#function for suspension
+def suspension():
+
+    print("S")
+
+    #database
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+    #selecting date,start_time,end_time, and id.
+    cursor.execute("SELECT class_status_date,class_status_time_start,class_status_time_end,class_status_type_id "
+                   "from class_status where class_status_date=CURDATE() and class_status_time_start=" + str(time_check()) + ";")
+    data_class_status = cursor.fetchall()
+    #row3 as the data in data_class_status
+    for row3 in data_class_status:
+        #statement to check date and time_start for the suspension
+        if str(row3[0]) == str(curdate()) and str(row3[1]) == str(time_check()):
+
+
+           #getting the level of suspension
+            if row3[3] == 1:
+                seq1 = 1
+                while seq1 == 1:
+                    while_loop_suspension()
+                    if while_loop_suspension()==0:
+                        seq1=0
+
+
+            elif row3[3] == 2:
+                    # sample of turning of ac with 5m in delay
+                    time.sleep(5)
+                    print("Suspended College")
+                    seq1 = 1
+                    while seq1 == 1:
+                        #database
+                        db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+                        cursor = db.cursor()
+                        # time interval of 1sec
+                        time.sleep(1)
+                        # time display
+                        time_display()
+                        # getting values for ending suspension
+                        cursor.execute("SELECT class_status_time_end,class_status_type_id"
+                                       "from class_status where class_status_date=CURDATE()"
+                                       "and class_status_time_end="+str(time_check())+";")
+                        suspension = cursor.fetchall()
+                        for row8 in suspension:
+                            if row8[0] == time_check():
+                                print("suspension over")
+                                seq1 = 0
+
+
+#professor attendance
+def emp():
+    #presence of professor
+    present=0
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+
+    #getting emp id from refsubjectofferingdtl
+    cursor.execute("SELECT emp_id from refsubjectofferingdtl where time="+str(time_check())+"&& day='"+str(day)+"';")
+    subject_emp = cursor.fetchall()
+
+    for row6 in subject_emp:
+
+        cursor.execute("SELECT date,emp_id,log_in from refemployeedtr where date=CURDATE() and emp_id=" + str(row6[0]) + ";")
+        employee = cursor.fetchall()
+
+        for row7 in employee:
+            if str(row7[0]) == str(curdate()) and row6[0] == row7[1] and row7[2]!= None:
+                present=1
+            else:
+                present=0
+    return present
+
+#main functions
+def main():
+    # database
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+    # checking for suspension
+    suspension()
+    # time and date display
+    curdate()
+    time_display()
+    # 1sec interval
+    time.sleep(1)
+    # getting values from refsubjectofferingdtl
+    cursor.execute(
+        "SELECT day,time,time_end from refsubjectofferingdtl where day='" + str(
+            day) + "';")
+    subject = cursor.fetchall()
+    return subject
+
+def main2():
+    # database
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT day,time,time_end from refsubjectofferingdtl where day='" + str(day) + "';")
+    subject1 = cursor.fetchall()
+    return subject1
+
+def main3():
+    lights=1
+    subject = main()
+    subject1 = main2()
+    for movement in subject1:
+        # turns on facilities for the next class (time_movement_on)
+        # statement to check for advance class schedules
+        if str(movement[0]) == str(day) and str(time_movement_on()) == str(time_movement_check()):
+            print("keep facilities on")
+            lights = 1
+    for row in subject:
+        # keep lights on when prof,day,time_start is met
+        if str(row[0]) == str(day) and emp() == 1 and str(row[1]) == str(time_check()):
+            print("keep facilities on")
+            lights = 1
+        # if prof is absent turn off
+        elif str(row[0]) == str(day) and emp() == 0 and str(row[1]) == str(time_check()):
+            print("turning off..")
+            time.sleep(3)
+
+            lights = 0
+        # turn off when class schedule ends
+        elif str(row[0]) == str(day) and str(row[2]) == str(time_check()):
+            print("off")
+
+            lights = 0
+    return lights
+
+#advance time_start
+def time_movement_on():
+    # database
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+    cursor.execute("SELECT time from refsubjectofferingdtl where day='" + str(day) + "';")
+    data = cursor.fetchall()
+    for row1 in data:
+        # pars to str the data of time_movement_on
+        num = str(row1[0])
+        num1 = num.count('')
+        # value for each digit of the number for each data
+        n1 = (num[0])
+        n2 = (num[1])
+        n3 = (num[2])
+        n4 = (num[3])
+        n5 = (num[4])
+
+        if num1 == 7:
+            n6 = (num[5])
+            # str value using concatenation
+            hours_holder = n1 + n2
+            minutes_holder = n3 + n4
+            seconds_holder = n5 + n6
+            # int value
+            hours = int(hours_holder)
+            minutes = int(minutes_holder)
+            seconds = int(seconds_holder)
+            t = timedelta(hours=hours, minutes=minutes, seconds=seconds) - timedelta(hours=0, minutes=0, seconds=10)
+            time_movement = [t]
+            ar = str(time_movement[0])
+            arr = ar
+        else:
+            hours_holder = n1
+            minutes_holder = n2 + n3
+            seconds_holder = n4 + n5
+            hours = int(hours_holder)
+            minutes = int(minutes_holder)
+            seconds = int(seconds_holder)
+            t = timedelta(hours=hours, minutes=minutes, seconds=seconds) - timedelta(hours=0, minutes=0, seconds=10)
+            time_movement = [t]
+            ar = str(time_movement[0])
+            arr = "0" + ar
+
+        return arr
+
+
+print(curdate())
+print("today is "+day)
+if __name__=="__main__":
+    print("here in main")
+    for i in infinite_loop():
+
+        #main function
+        subject=main()
+        subject1=main2()
+        #sequence for while loop in checking class schedules
+        lights=0
+        #advance time_start
+        for movement in subject1:
+
+            # statement to check for advance class schedules
+            if str(movement[0])==str(day) and str(time_movement_on()) == str(time_movement_check()):
+                 print("on")
+
+                 lights = 1
+        #exact time_start
+        for row in subject:
+
+            #statement to check for class schedules
+            if str(row[0])==str(day) and emp() == 1 and str(row[1])==str(time_check()):
+                 print("on")
+
+                 lights=1
+
+        while lights == 1:
+            main3()
+
+
+
+
+
+
+
+
+
+

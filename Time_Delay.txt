@@ -1,0 +1,64 @@
+import time
+import datetime
+import pymysql
+import RPi.GPIO as GPIO
+from time import localtime, strftime
+
+def infinite_loop():
+    while True:
+        yield True
+
+for i in infinite_loop():
+    
+    #Showcase for time running
+    HM_time = strftime(strftime('%I'+':'+'%M'+':'+'%S'+'%p', localtime()))
+    Hour_Min = str(HM_time)
+    print(Hour_Min)
+    
+    #time
+    time1 = strftime(strftime('%I'+'%M'+'%S', localtime()))
+    
+    #time sleep 1
+    time.sleep(1)
+    
+    #database connection
+    db = pymysql.connect("localhost", "marco", "meliodas123", "iot")
+
+    # prepare a cursor object using cursor() method
+    cursor = db.cursor()
+                
+    #getting time data            
+    cursor.execute("SELECT id from sensor_test where time="+time1+";")
+    data = cursor.fetchall()
+
+    for id in data:
+        
+        cursor.execute("SELECT time_delay from sensor_test where id="+str(id[0])+";")
+        data1 = cursor.fetchall()
+        
+        for time_delay in data1:
+            
+            print("on")
+            lights=1
+            seq=0
+            
+            while lights==1:
+                 
+                 seq += 1;
+                 print(seq)
+                 time.sleep(1)
+                 if time_delay[0] == seq:
+                     print("off")
+                     lights=0
+                 
+             
+             
+             
+             
+             
+             
+    
+db.close()    
+            
+            
+
