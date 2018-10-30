@@ -1,0 +1,178 @@
+import pymysql
+import time
+import datetime
+
+from time import localtime, strftime
+
+# display week of the day
+tWday = datetime.date.today()
+day_of_week = tWday.isoweekday()
+if day_of_week == 1:
+        day = 'mon'
+elif day_of_week == 2:
+        day = 'tue'
+elif day_of_week == 3:
+        day_of_week = "wed"
+elif day_of_week == 4:
+        day = 'thu'
+elif day_of_week == 5:
+        day= 'fri'
+elif day_of_week == 6:
+        day= 'sat'
+elif day_of_week == 7:
+        day = 'sun'
+
+
+#main function
+def main():
+    return 0
+
+#time display
+def time_display():
+    # preparing our current time of the day running
+    HM_time = strftime(strftime('%I' + ':' + '%M' + ':' + '%S' + '%p', localtime()))
+    Hour_Min = str(HM_time)
+    print(Hour_Min)
+
+def curdate():
+    c = time.strftime('%Y' + '-' + '%m' + '-' + '%d')
+    return c
+
+#time to compare to time in database
+def time_check():
+        time1 = strftime(strftime('%I' + '%M' + '%S', localtime()))
+        time2 = int(time1)
+        return time2
+
+#infinite loop
+def infinite_loop():
+    while True:
+        yield True
+
+#to put inside while loop in suspension
+def while_loop_suspension():
+
+        # #variable to compare to the class_type of refsubjectofferingdtl
+        suspended = "Senior High School"
+        #variable for the while loop
+        seq1=1
+        print("WLS")
+        # database
+        db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+        cursor = db.cursor()
+
+        # time interval of 1sec
+        time.sleep(1)
+
+        # time display
+        time_display()
+
+        # selecting id from refsubjectofferingdtl.
+        # selecting id from refsubjectofferingdtl.
+        cursor.execute(
+            "SELECT class_typerefSubjectOfferingDtl_class_type,time from refsubjectofferingdtl where time=" + str(
+                time_check()) + "&& day='" + str(day) + "';")  # add day to condition
+        data_subject_id = cursor.fetchall()
+
+        # comparing subjectoffering to suspension schedule and type
+        for row4 in data_subject_id:
+            if row4[0] == suspended and str(row4[1])==str(time_check()):
+                # sample of turning of ac with 5min delay
+                time.sleep(5)
+                print("off SHS")
+            elif row4[0] != suspended and str(row4[1])==str(time_check()):
+                print("do nothing")
+
+        # getting values for ending suspension
+        cursor.execute("SELECT class_status_time_end,class_status_type_id from class_status where class_status_date=CURDATE() and class_status_time_end=" + str(time_check()) + ";")
+        data5 = cursor.fetchall()
+        for row5 in data5:
+            if row5[0] == time_check():
+                print("suspension over")
+                seq1 = 0
+        return seq1
+
+
+
+
+
+
+
+#function for suspension
+def suspension():
+
+    print("S")
+
+    #database
+    db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+    cursor = db.cursor()
+    #selecting date,start_time,end_time, and id.
+    cursor.execute("SELECT class_status_date,class_status_time_start,class_status_time_end,class_status_type_id "
+                   "from class_status where class_status_date=CURDATE() and class_status_time_start=" + str(time_check()) + ";")
+    data_class_status = cursor.fetchall()
+    #row3 as the data in data_class_status
+    for row3 in data_class_status:
+        #statement to check date and time_start for the suspension
+        if str(row3[0]) == str(curdate()) and str(row3[1]) == str(time_check()):
+
+
+           #getting the level of suspension
+            if row3[3] == 1:
+                seq1 = 1
+                while seq1 == 1:
+                    while_loop_suspension()
+                    if while_loop_suspension()==0:
+                        seq1=0
+
+
+            elif row3[3] == 2:
+                    # sample of turning of ac with 5m in delay
+                    time.sleep(5)
+                    print("Suspended College")
+                    seq1 = 1
+                    while seq1 == 1:
+                        #database
+                        db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+                        cursor = db.cursor()
+                        # time interval of 1sec
+                        time.sleep(1)
+                        # time display
+                        time_display()
+                        # getting values for ending suspension
+                        cursor.execute("SELECT class_status_time_end,class_status_type_id"
+                                       "from class_status where class_status_date=CURDATE()"
+                                       "and class_status_time_end="+str(time_check())+";")
+                        data5 = cursor.fetchall()
+                        for row5 in data5:
+                            if row5[0] == time_check():
+                                print("suspension over")
+                                seq1 = 0
+
+
+
+
+
+
+
+
+print(curdate())
+
+if __name__=="__main__":
+    main()
+    print("here in main")
+    for i in infinite_loop():
+        # database
+        db = pymysql.connect("localhost", "marco", "meliodas123", "check")
+        cursor = db.cursor()
+        #checking for suspension
+        suspension()
+        #time and date display
+        curdate()
+        time_display()
+        #1sec interval
+        time.sleep(1)
+
+
+
+
+
